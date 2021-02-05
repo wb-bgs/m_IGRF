@@ -12,8 +12,8 @@ from observatories, ships, aircrafts and satellites.
 
 The IGRF model consists of sets of coefficients for a global
 representation of the Earth magnetic field for the years 1945, 1950,
-1955, etc. There are definitive coefficient sets (`DGRF####.DAT`;
-#### = year) for which no further revisions are anticipated and
+1955, etc. There are definitive coefficient sets (`DGRF####.DAT`; ####
+= year) for which no further revisions are anticipated and
 `IGRF####.DAT` and `IGRF####S.DAT` for which future updates are
 expected. `IGRF####S.DAT` provides the first time derivatives of the
 coefficients for extrapolation into the future. The 13th generation of
