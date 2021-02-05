@@ -56,7 +56,8 @@ with the old .mat file. Updates happen every five years, with the last
 update occurring in 2015. New .dat files will hopefully continue to be
 uploaded to the following website (though it appears the files haven't
 been updated since 2007):
-https://ccmc.gsfc.nasa.gov/pub/modelweb/geomagnetic/igrf/fortran_code/
+~https://ccmc.gsfc.nasa.gov/pub/modelweb/geomagnetic/igrf/fortran_code/~
+(*NB. links no longer active*)
 
 Finally, I have included two example scripts showing how the function
 IGRFLINE works: `plotbline.m` and `plotbearth.m`. These scripts both
@@ -65,9 +66,10 @@ lines are plotted, but if the user does not have that package, a crude
 globe with just latitude and longitude lines is shown.
 
 I've made some cursory comparisons with the online IGRF calculator at
-http://ccmc.gsfc.nasa.gov/modelweb/models/igrf_vitmo.php and found this
-function to be accurate to within 1 nT. I'm not sure why there is a
-discrepancy between the two, but my guess is round-off error.
+~http://ccmc.gsfc.nasa.gov/modelweb/models/igrf_vitmo.php~
+(*NB. links no longer active*) and found this function to be accurate
+to within 1 nT. I'm not sure why there is a discrepancy between the two,
+but my guess is round-off error.
 
 ## Other resources
 
@@ -89,10 +91,10 @@ Model
 MATLAB Central File Exchange. Retrieved December 8, 2021.
 
 It was updated for IGRF-13 by William Brown, British Geological Survey
-in December 2019.
+in December 2019. Contact wb@bgs.ac.uk, or see,
+https://github.com/wb-bgs/m_IGRF.
 
-
-## Major edits
+## Edits
  - 19 Dec 2019: Correction for final roundings of IGRF-13 coefficients
  - 11 Dec 2019: IGRF-13 coefficients added
  - 26 Nov 2019: Correction to allow return of field at 1900.0, removed name clash of `year` variable
