@@ -53,11 +53,9 @@ newer versions in a subfolder called 'datfiles' within the same
 directory that the function getigrfcoefs.m is located and run
 `getigrfcoefs`, and then replace the file it generates (`igrfcoefs.mat`)
 with the old .mat file. Updates happen every five years, with the last
-update occurring in 2015. New .dat files will hopefully continue to be
-uploaded to the following website (though it appears the files haven't
-been updated since 2007):
-~https://ccmc.gsfc.nasa.gov/pub/modelweb/geomagnetic/igrf/fortran_code/~
-(*NB. links no longer active*)
+update occurring in 2020. New .dat files will hopefully continue to be
+uploaded to the following website,
+https://ccmc.gsfc.nasa.gov/pub/modelweb/geomagnetic/igrf/fortran_code/.
 
 Finally, I have included two example scripts showing how the function
 IGRFLINE works: `plotbline.m` and `plotbearth.m`. These scripts both
@@ -65,21 +63,21 @@ utilize the Mapping Toolbox to plot globes upon which magnetic field
 lines are plotted, but if the user does not have that package, a crude
 globe with just latitude and longitude lines is shown.
 
-I've made some cursory comparisons with the online IGRF calculator at
-~http://ccmc.gsfc.nasa.gov/modelweb/models/igrf_vitmo.php~
-(*NB. links no longer active*) and found this function to be accurate
-to within 1 nT. I'm not sure why there is a discrepancy between the two,
-but my guess is round-off error.
+I've made some cursory comparisons with the online IGRF calculator at,
+http://ccmc.gsfc.nasa.gov/modelweb/models/igrf_vitmo.php,
+and found this function to be accurate to within 1 nT. I'm not sure why
+there is a discrepancy between the two, but my guess is round-off error.
 
 ## Other resources
 
 The IGRF homepage is at,
 http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html,
-where Fortran and Python evaluation codes for the model are also
-available.
+where data files, publications, and Fortran and Python evaluation codes
+for the model are also available.
 
-A web calculator and other resources are availale at,
-https://geomag.bgs.ac.uk/data_service/models_compass/home.html
+A web calculator, geomagnetic coordinate calculator, and other resources
+are availale at,
+https://geomag.bgs.ac.uk/data_service/models_compass/home.html.
 
 ## Authors
 
