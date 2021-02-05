@@ -86,7 +86,7 @@ Matlab File Exchange,
 Drew Compston (2021). International Geomagnetic Reference Field (IGRF)
 Model
 (https://www.mathworks.com/matlabcentral/fileexchange/34388-international-geomagnetic-reference-field-igrf-model),
-MATLAB Central File Exchange. Retrieved December 8, 2021.
+MATLAB Central File Exchange. Retrieved December 8, 2020.
 
 It was updated for IGRF-13 by William Brown, British Geological Survey
 in December 2019. Contact wb@bgs.ac.uk, or see,
