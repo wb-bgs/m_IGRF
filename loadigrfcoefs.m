@@ -28,6 +28,10 @@ function [g, h] = loadigrfcoefs(time)
 %   -GH: g and h coefficient vector formatted as:
 %   [g(n=1,m=0) g(n=1,m=1) h(n=1,m=1) g(n=2,m=0) g(n=2,m=1) h(n=2,m=1) ...]
 % 
+% Edits:
+%  Will Brown, BGS, 26-11-2019
+%    Corrected error with input of 1900.0 exactly
+% 
 % See also: IGRF, GETIGRFCOEFS.
 
 % Convert time to a datenumber if it is a string.
@@ -52,14 +56,17 @@ end
 load igrfcoefs.mat;
 
 % Check validity on time.
-year = cell2mat({coefs.year});
-if time < year(1) || time > year(end)
+years = cell2mat({coefs.year});
+if time < years(1) || time > years(end)
     error('igrf:timeOutOfRange', ['This IGRF is only valid between ' ...
-        num2str(year(1)) ' and ' num2str(year(end))]);
+        num2str(years(1)) ' and ' num2str(years(end))]);
 end
 
 % Get the nearest epoch that the current time is between.
-lastepoch = find(year - time < 0, 1, 'last');
+lastepoch = find(years - time < 0, 1, 'last');
+if isempty(lastepoch)
+    lastepoch = 1;
+end
 nextepoch = lastepoch + 1;
 
 % Output either g and h matrices or gh vector depending on the number of
@@ -92,11 +99,11 @@ if nargout > 1
         gslope = nextg;
         hslope = nexth;
     else
-        gslope = (nextg - lastg)/diff(year([lastepoch nextepoch]));
-        hslope = (nexth - lasth)/diff(year([lastepoch nextepoch]));
+        gslope = (nextg - lastg)/diff(years([lastepoch nextepoch]));
+        hslope = (nexth - lasth)/diff(years([lastepoch nextepoch]));
     end
-    g = lastg + gslope*(time - year(lastepoch));
-    h = lasth + hslope*(time - year(lastepoch));
+    g = lastg + gslope*(time - years(lastepoch));
+    h = lasth + hslope*(time - years(lastepoch));
     
 else
     
@@ -121,8 +128,8 @@ else
     if coefs(nextepoch).slope
         ghslope = nextgh;
     else
-        ghslope = (nextgh - lastgh)/diff(year([lastepoch nextepoch]));
+        ghslope = (nextgh - lastgh)/diff(years([lastepoch nextepoch]));
     end
-    g = lastgh + ghslope*(time - year(lastepoch));
+    g = lastgh + ghslope*(time - years(lastepoch));
     
 end
