@@ -56,14 +56,14 @@ end
 load igrfcoefs.mat;
 
 % Check validity on time.
-years = cell2mat({coefs.year});
-if time < years(1) || time > years(end)
+yrs = cell2mat({coefs.year});
+if time < yrs(1) || time > yrs(end)
     error('igrf:timeOutOfRange', ['This IGRF is only valid between ' ...
-        num2str(years(1)) ' and ' num2str(years(end))]);
+        num2str(yrs(1)) ' and ' num2str(yrs(end))]);
 end
 
 % Get the nearest epoch that the current time is between.
-lastepoch = find(years - time < 0, 1, 'last');
+lastepoch = find(yrs - time < 0, 1, 'last');
 if isempty(lastepoch)
     lastepoch = 1;
 end
@@ -99,11 +99,11 @@ if nargout > 1
         gslope = nextg;
         hslope = nexth;
     else
-        gslope = (nextg - lastg)/diff(years([lastepoch nextepoch]));
-        hslope = (nexth - lasth)/diff(years([lastepoch nextepoch]));
+        gslope = (nextg - lastg)/diff(yrs([lastepoch nextepoch]));
+        hslope = (nexth - lasth)/diff(yrs([lastepoch nextepoch]));
     end
-    g = lastg + gslope*(time - years(lastepoch));
-    h = lasth + hslope*(time - years(lastepoch));
+    g = lastg + gslope*(time - yrs(lastepoch));
+    h = lasth + hslope*(time - yrs(lastepoch));
     
 else
     
@@ -128,8 +128,8 @@ else
     if coefs(nextepoch).slope
         ghslope = nextgh;
     else
-        ghslope = (nextgh - lastgh)/diff(years([lastepoch nextepoch]));
+        ghslope = (nextgh - lastgh)/diff(yrs([lastepoch nextepoch]));
     end
-    g = lastgh + ghslope*(time - years(lastepoch));
+    g = lastgh + ghslope*(time - yrs(lastepoch));
     
 end

@@ -117,8 +117,8 @@ for index = 1:numel(datfiles)
 end
 
 % Sort coefs based on the year.
-years = cell2mat({coefs.year});
-[dontcare, sortind] = sort(years);
+yrs = cell2mat({coefs.year});
+[~, sortind] = sort(yrs);
 coefs = coefs(sortind);
 
 if nargout >= 1
