@@ -93,6 +93,7 @@ in December 2019. Contact wb@bgs.ac.uk, or see,
 https://github.com/wb-bgs/m_IGRF.
 
 ## Edits
+ - 06 Feb 2021: Another name conflict, 'years' is a built in now too!
  - 19 Dec 2019: Correction for final roundings of IGRF-13 coefficients
  - 11 Dec 2019: IGRF-13 coefficients added
  - 26 Nov 2019: Correction to allow return of field at 1900.0, removed name clash of `year` variable
