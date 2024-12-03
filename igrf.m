@@ -1,10 +1,10 @@
-function [Bx, By, Bz] = igrf(time, latitude, longitude, altitude, coord)
+function [Bx, By, Bz] = igrf(dates, latitude, longitude, altitude, coord)
 
 % IGRF Earth's magnetic field from IGRF model.
 % 
-% Usage: [BX, BY, BZ] = IGRF(TIME, LATITUDE, LONGITUDE, ALTITUDE, COORD)
+% Usage: [BX, BY, BZ] = IGRF(DATES, LATITUDE, LONGITUDE, ALTITUDE, COORD)
 %     or [BX, BY, BZ] = IGRF(COEFS, LATITUDE, LONGITUDE, ALTITUDE, COORD)
-%     or B = IGRF(TIME, LATITUDE, LONGITUDE, ALTITUDE, COORD)
+%     or B = IGRF(DATES, LATITUDE, LONGITUDE, ALTITUDE, COORD)
 %     or B = IGRF(COEFS, LATITUDE, LONGITUDE, ALTITUDE, COORD)
 % 
 % Calculates the components of the Earth's magnetic field using the
@@ -42,20 +42,23 @@ function [Bx, By, Bz] = igrf(time, latitude, longitude, altitude, coord)
 % 
 % The IGRF is a spherical harmonic expansion of the Earth's internal
 % magnetic field. Currently, the IGRF model is valid between the years 1900
-% and 2015. See the health warning for the IGRF model here:
-% http://www.ngdc.noaa.gov/IAGA/vmod/igrfhw.html
+% and 2030. See the health warning for the IGRF model here:
+% https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field/health-warning
 % 
 % Reference:
-% International Association of Geomagnetism and Aeronomy, Working Group 
-% V-MOD (2010), International Geomagnetic Reference Field: the eleventh
-% generation, _Geophys. J. Int._, _183_(3), 1216-1230, 
-% doi:10.1111/j.1365-246X.2010.04804.x.
+% International Geomagnetic Reference Field - fourteenth generation;
+% International Association of Geomagnetism and Aeronomy working group
+% V-MOD; Beggan, Kloss & Smith, et al; 2024; doi:10.5281/zenodo.14218973.
+% https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field
+% 
+% Edits:
+%  18-Nov-2024, Will Brown, British Geological Survey
+%    Modernised to use datetime in place of datenum.
 % 
 % Inputs:
-%   -TIME: Time to get the magnetic field values either in MATLAB serial
-%   date number format or a string that can be converted into MATLAB serial
-%   date number format using DATENUM with no format specified (see
-%   documentation of DATENUM for more information).
+%   -DATES: Time to get the magnetic field values either in MATLAB datetime
+%   format or a string that can be converted using DATETIME with no
+%   format specified (see documentation of DATETIME for more information).
 %   -COEFS: Instead of inputting a time, you can simply specify the proper
 %   coefficients for the time you want by inputting in the first argument
 %   the proper coefficient vector from igrfcoefs.mat.
@@ -79,16 +82,16 @@ function [Bx, By, Bz] = igrf(time, latitude, longitude, altitude, coord)
 % Run IGRFS if all position inputs are scalars.
 if isscalar(latitude) && isscalar(longitude) && isscalar(altitude)
     if nargin < 5
-        [Bx, By, Bz] = igrfs(time, latitude, longitude, altitude);
+        [Bx, By, Bz] = igrfs(dates, latitude, longitude, altitude);
     else
-        [Bx, By, Bz] = igrfs(time, latitude, longitude, altitude, coord);
+        [Bx, By, Bz] = igrfs(dates, latitude, longitude, altitude, coord);
     end
 % Otherwise run IGRFV.
 else
     if nargin < 5
-        [Bx, By, Bz] = igrfv(time, latitude, longitude, altitude);
+        [Bx, By, Bz] = igrfv(dates, latitude, longitude, altitude);
     else
-        [Bx, By, Bz] = igrfv(time, latitude, longitude, altitude, coord);
+        [Bx, By, Bz] = igrfv(dates, latitude, longitude, altitude, coord);
     end
 end
 
@@ -99,19 +102,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%        IGRF vector function.        %%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Bx, By, Bz] = igrfv(time, latitude, longitude, altitude, coord)
+function [Bx, By, Bz] = igrfv(dates, latitude, longitude, altitude, coord)
 
 % Fundamental constant.
 Rearth_km = 6371.2;
 
 %%% CHECK INPUT VALIDITY %%%
-% Convert time to a datenumber if it is a string.
-if ischar(time)
-    time = datenum(time);
+% Convert time to a datetime if it is not already
+if ~isdatetime(dates)
+    dates = datetime(dates);
 end
 
 % Make sure time has only one element.
-if numel(time) > 1
+if numel(dates) > 1
     error('igrf:timeInputInvalid', ['The input TIME can only have one ' ...
         'element.']);
 end
@@ -186,7 +189,7 @@ anysinthetanot0 = any(~sintheta0);
 phi = longitude(:)*pi/180;
 
 %%% GET PROPER IGRF COEFFICIENTS %%%
-[g, h] = loadigrfcoefs(time);
+[g, h] = loadigrfcoefs(dates);
 nmax = size(g, 1);
 
 % We need cos(m*phi) and sin(m*phi) multiple times, so precalculate into a
@@ -285,15 +288,15 @@ Bz = Bz.*cd - Bx_old.*sd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%        IGRF scalar function.        %%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Bx, By, Bz] = igrfs(time, latitude, longitude, altitude, coord)
+function [Bx, By, Bz] = igrfs(dates, latitude, longitude, altitude, coord)
 
 % Fundamental constant.
 Rearth_km = 6371.2;
 
 %%% CHECK INPUT VALIDITY %%%
 % Convert time to a datenumber if it is a string.
-if ischar(time)
-    time = datenum(time);
+if ~isdatetime(dates)
+    dates = datetimes(dates);
 end
 
 % Check that the input coordinates are scalars.
@@ -338,12 +341,12 @@ end
 phi = longitude*pi/180;
 
 %%% GET PROPER IGRF COEFFICIENTS %%%
-if isscalar(time)
-    gh = loadigrfcoefs(time);
+if isscalar(dates)
+    gh = loadigrfcoefs(dates);
     nmax = sqrt(numel(gh) + 1) - 1;
 % Assume a vector input means the coefficients are the input.
 else
-    gh = time;
+    gh = dates;
     nmax = sqrt(numel(gh) + 1) - 1;
     % nmax should be an integer.
     if nmax - round(nmax) ~= 0

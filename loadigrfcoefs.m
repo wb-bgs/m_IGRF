@@ -1,8 +1,8 @@
-function [g, h] = loadigrfcoefs(time)
+function [g, h] = loadigrfcoefs(dates)
 
 % LOADIGRFCOEFS Load coefficients used in IGRF model.
 % 
-% Usage: [G, H] = LOADIGRFCOEFS(TIME) or GH = LOADIGRFCOEFS(TIME)
+% Usage: [G, H] = LOADIGRFCOEFS(DATES) or GH = LOADIGRFCOEFS(DATES)
 % 
 % Loads the coefficients used in the IGRF model at time TIME in MATLAB
 % serial date number format and performs the necessary interpolation. If
@@ -15,10 +15,10 @@ function [g, h] = loadigrfcoefs(time)
 % path, it will try to create it by calling GETIGRFCOEFS.
 % 
 % Inputs:
-%   -TIME: Time to load coefficients either in MATLAB serial date number
-%   format or a string that can be converted into MATLAB serial date number
-%   format using DATENUM with no format specified (see documentation of
-%   DATENUM for more information).
+%   -DATES: Time to load coefficients either in MATLAB datetime format or a
+%   string that can be converted into MATLAB datetime format using DATETIME
+%   with no format specified (see documentation of DATETIME for more
+%   information). 
 % 
 % Outputs:
 %   -G: g coefficients matrix (with n going down the rows, m along the
@@ -29,41 +29,43 @@ function [g, h] = loadigrfcoefs(time)
 %   [g(n=1,m=0) g(n=1,m=1) h(n=1,m=1) g(n=2,m=0) g(n=2,m=1) h(n=2,m=1) ...]
 % 
 % Edits:
-%  Will Brown, BGS, 26-11-2019
+%  26-Nov-2019, Will Brown, British Geological Survey
 %    Corrected error with input of 1900.0 exactly
+%  18-Nov-2024, Will Brown, British Geological Survey
+%    Modernised to use datetime in place of datenum.
 % 
 % See also: IGRF, GETIGRFCOEFS.
 
 % Convert time to a datenumber if it is a string.
-if ischar(time)
-    time = datenum(time);
+if ~isdatetime(dates)
+    dates = datetime(dates);
 end
 % Make sure time has only one element.
-if numel(time) > 1
+if numel(dates) > 1
     error('loadigrfcoefs:timeInputInvalid', ['The input TIME can only ' ...
         'have one element']);
 end
 
 % Convert time to fractional years.
-timevec = datevec(time);
-time = timevec(1) + (time - datenum([timevec(1) 1 1]))./(365 + double(...
-    (~mod(timevec(1),4) & mod(timevec(1),100)) | (~mod(timevec(1),400))));
+tStart = dateshift(dates, 'start', 'year');
+tEnd = tStart + calyears(1);
+dates = year(dates) + (dates - tStart) ./ (tEnd - tStart);
 
 % Load coefs and years variables.
 if ~exist('igrfcoefs.mat', 'file')
     getigrfcoefs;
 end
-load igrfcoefs.mat;
+load igrfcoefs.mat coefs;
 
 % Check validity on time.
-yrs = cell2mat({coefs.year});
-if time < yrs(1) || time > yrs(end)
+years = cell2mat({coefs.year});
+if dates < years(1) || dates > years(end)
     error('igrf:timeOutOfRange', ['This IGRF is only valid between ' ...
-        num2str(yrs(1)) ' and ' num2str(yrs(end))]);
+        num2str(years(1)) ' and ' num2str(years(end))]);
 end
 
 % Get the nearest epoch that the current time is between.
-lastepoch = find(yrs - time < 0, 1, 'last');
+lastepoch = find(years < dates, 1, 'last');
 if isempty(lastepoch)
     lastepoch = 1;
 end
@@ -99,11 +101,11 @@ if nargout > 1
         gslope = nextg;
         hslope = nexth;
     else
-        gslope = (nextg - lastg)/diff(yrs([lastepoch nextepoch]));
-        hslope = (nexth - lasth)/diff(yrs([lastepoch nextepoch]));
+        gslope = (nextg - lastg)/diff(years([lastepoch nextepoch]));
+        hslope = (nexth - lasth)/diff(years([lastepoch nextepoch]));
     end
-    g = lastg + gslope*(time - yrs(lastepoch));
-    h = lasth + hslope*(time - yrs(lastepoch));
+    g = lastg + gslope*(dates - years(lastepoch));
+    h = lasth + hslope*(dates - years(lastepoch));
     
 else
     
@@ -128,8 +130,8 @@ else
     if coefs(nextepoch).slope
         ghslope = nextgh;
     else
-        ghslope = (nextgh - lastgh)/diff(yrs([lastepoch nextepoch]));
+        ghslope = (nextgh - lastgh)/diff(years([lastepoch nextepoch]));
     end
-    g = lastgh + ghslope*(time - yrs(lastepoch));
+    g = lastgh + ghslope*(dates - years(lastepoch));
     
 end
