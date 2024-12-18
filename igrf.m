@@ -95,6 +95,11 @@ else
     end
 end
 
+% Round outputs to 1nT precision of IGRF
+Bx = round(Bx);
+By = round(By);
+Bz = round(Bz);
+
 if nargout <= 1
     Bx = [Bx(:), By(:), Bz(:)];
 end
@@ -365,7 +370,7 @@ Pmax = (nmax+1)*(nmax+2)/2;
 %%% BEGIN MAGNETIC FIELD CALCULATION %%%
 % Initialize variables used in for loop below.
 Br = 0; Bt = 0; Bp = 0;
- P = zeros(1, Pmax);  P(1) = 1;  P(3) = sintheta;
+P = zeros(1, Pmax);  P(1) = 1;  P(3) = sintheta;
 dP = zeros(1, Pmax); dP(1) = 0; dP(3) = costheta;
 
 % For this initial condition, the first if will result in n = 1, m = 0.
