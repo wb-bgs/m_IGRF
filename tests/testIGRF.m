@@ -13,19 +13,12 @@ addpath('../')
 % Set to current IGRF generation number
 igrfGen = '14';
 
-% Test definitive values
-
-
-% Test predicted values
-
-
-% Test date to decimal year conversion
-
-
-% Test date range
-
-
-% Test geodetic vs geocentric
+% Test definitive values, in geodetic and geocentric, single and triple
+% variable output
+% Some dates match to 1nT precision, but examples fail test for both
+% past and present dates, both geocentric and geodetic, X, Y, and Z ...
+% maybe it's the legendre approx? likely not the SH part, coefficients,
+% or geodetic conversion. Test against the CHAOS implementation?
 dates = '1960-5-13';
 dt = datetime(dates);
 lat = -45;
@@ -36,19 +29,28 @@ coords = 'geodetic';
 [expX, expY, expZ] = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
 tol = 0.5; % IGRF given 1nT precision, so allow for rounding
 % assertWithAbsTol([X,Y,Z], [expX,expY,expZ], tol, ...
-    % 'Test 5: X,Y,Z geodetic does not match.')
+    % 'Test 1: X,Y,Z geodetic does not match.')
 
 rds = 6400;
 coords = 'geocentric';
 B = igrf(dt, lat, lon, rds, coords);
 expB = igrfWebCalc(igrfGen, dates, lat, lon, rds, coords);
 % assertWithAbsTol(B, expB, tol, ...
-    % 'Test 5: B geodetic does not match.')
+    % 'Test 2: B geocentric does not match.')
+
+% Test predicted values
+
+
+% Test date to decimal year conversion
+
+
+% Test date range
+
 
 % Test poles
 
 
-% Test scalar vs vector calculation route
+% Test vector input calculation route (other test are all scalal route)
 
 
 
