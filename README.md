@@ -61,6 +61,41 @@ utilize the Mapping Toolbox to plot globes upon which magnetic field
 lines are plotted, but if the user does not have that package, a crude
 globe with just latitude and longitude lines is shown.
 
+## Accuracy
+
+Original author's comment (with 2025 https address updated)):
+I've made some cursory comparisons with the online IGRF calculator at,
+https://ccmc.gsfc.nasa.gov/modelweb/models/igrf_vitmo.php, and found
+this function to be accurate to within 1 nT. I'm not sure why there is a
+discrepancy between the two, but my guess is round-off error.
+
+WB comment:
+I have added a test function to compare output of `igrf.m` to the
+official BGS IGRF calculator output. This confirms that this code can
+typically match the output to 1nT. I have verified the algorithms for
+Gauss coefficent interpolation in time, Legendre function derivative
+calculation, and geodetic to geocentric coordinate tranformation against
+independent codes.
+
+1nT is the acepted precision to which IGRF field values should be given.
+I have found that there are discepencies of 1nT at 1nT precision in a
+small number of cases, which I have tracked down to language and system
+dependent implementation of rounding used by the various "official" IGRF
+codes available. Essentially, Fortran, C, Matlab and Python may all
+implement different rounding schemes when printing output values at a
+specified precision, particularly on tie values that may be e.g. rounded
+toward zero, away from zero, to even, depending on the specific
+implementation. It is difficult to exactly reproduce output across
+implementations as as each uses slightly different algorithms, typically
+producing variations at less than 1e-3 in the computed values, but that
+mean exact ties effected by rounding schemes are not uniformly produced
+across codes.
+
+Note also that handling of computations at the geographic poles is not
+uniform and users should avoid calculations here, as the spherical
+geocentric coordinate system is not well defined there and assumptions
+must be made as to which way North and East are!
+
 ## Other resources
 
 The IGRF homepage and NOAA hosted resources are at,
@@ -70,7 +105,10 @@ for the model are also available.
 
 A BGS hosted web calculator, geomagnetic coordinate calculator, and other
 resources are availale at,
-`https://geomag.bgs.ac.uk/research/modelling/IGRF.html`
+`https://geomag.bgs.ac.uk/research/modelling/IGRF.html`.
+
+A NASA CCMC hosted calculator is available at,
+`https://ccmc.gsfc.nasa.gov/modelweb/models/igrf_vitmo.php`.
 
 ## Authors
 
@@ -82,13 +120,15 @@ Model
 MATLAB Central File Exchange. Retrieved December 8, 2020.
 
 It was updated for IGRF-13 and IGRF-14 by William Brown, British
-Geological Survey. The IGRF-14 onward includes testing to verift output
-against the official IGRF calculator.
+Geological Survey. The IGRF-14 onward includes testing to verify output
+against the official BGS IGRF calculator.
 Contact wb@bgs.ac.uk, or see,
 `https://github.com/wb-bgs/m_IGRF.`
 
 ## Edits
- - 18 Nov 2024: IGRF-14 update, replaced `datenum` use with `datetime`, added testing against official calcaultor
+ - 18 Nov 2024: IGRF-14 update, replaced `datenum` use with `datetime`,
+                rounded output to 1nT precision, added testing against
+                official calculator
  - 06 Feb 2021: Another name conflict, 'years' is a built in now too!
  - 19 Dec 2019: Correction for final roundings of IGRF-13 coefficients
  - 11 Dec 2019: IGRF-13 coefficients added
