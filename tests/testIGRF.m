@@ -1,4 +1,4 @@
-%% Script based tests for igrf.m implementation of IGRF evaluation
+% Script based tests for igrf.m implementation of IGRF evaluation
 % 
 % 05-Dec-2024, Will Brown, British Geological Survey
 % 
@@ -8,17 +8,15 @@
 % results = runtests('testIGRF');
 
 clearvars
+t0 = tic;
 addpath('../')
 
 % Set to current IGRF generation number
 igrfGen = '14';
+tol = 1; % IGRF given to 1nT precision, so allow for rounding discrepencies
 
-% Test definitive values, in geodetic and geocentric, single and triple
-% variable output
-% Some dates match to 1nT precision, but examples fail test for both
-% past and present dates, both geocentric and geodetic, X, Y, and Z ...
-% maybe it's the legendre approx? likely not the SH part, coefficients,
-% or geodetic conversion. Test against the CHAOS implementation?
+%% Test 1: Definitive geodetic triple var
+% Test definitive values, in geodetic, triple variable output
 dates = '1960-5-13';
 dt = datetime(dates);
 lat = -45;
@@ -27,33 +25,114 @@ alt = 50;
 coords = 'geodetic';
 [X, Y, Z] = igrf(dt, lat, lon, alt, coords);
 [expX, expY, expZ] = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
-tol = 0.5; % IGRF given 1nT precision, so allow for rounding
-% assertWithAbsTol([X,Y,Z], [expX,expY,expZ], tol, ...
-    % 'Test 1: X,Y,Z geodetic does not match.')
+assertWithAbsTol([X,Y,Z], [expX,expY,expZ], tol, ...
+    'Test 1: X,Y,Z geodetic does not match.')
+fprintf('.')
 
-rds = 6400;
+%% Test 2: Definitive geocentric single var
+% Test definitive values, in geocentic, single  variable output
+rds = 6412.68919478693; % approx match for 50km WGS84 altitude geodetic
 coords = 'geocentric';
 B = igrf(dt, lat, lon, rds, coords);
 expB = igrfWebCalc(igrfGen, dates, lat, lon, rds, coords);
-% assertWithAbsTol(B, expB, tol, ...
-    % 'Test 2: B geocentric does not match.')
+assertWithAbsTol(B, expB, tol, ...
+    'Test 2: B geocentric does not match.')
+fprintf('.')
 
 % Test predicted values
-
+dates = '2029-12-31';
+dt = datetime(dates);
+lat = 58.2;
+lon = 186.9;
+alt = 0;
+coords = 'geodetic';
+B = igrf(dt, lat, lon, alt, coords);
+expB = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
+assertWithAbsTol(B, expB, tol, ...
+    'Test 3: SV prediction does not match.')
+fprintf('.')
 
 % Test date to decimal year conversion
-
+dates = '2000-7-2';
+dt = datetime(dates);
+dyr = 2000.5;
+lat = -60;
+lon = 360;
+alt = -1;
+coords = 'geodetic';
+B = igrf(dt, lat, lon, alt, coords);
+expB = igrfWebCalc(igrfGen, dyr, lat, lon, alt, coords);
+assertWithAbsTol(B, expB, tol, ...
+    'Test 4: Date to decimal year conversion does not match.')
+fprintf('.')
 
 % Test date range
+% Should really use the testcase class, but can cheat with try, catch...
+dates = '1899-12-31';
+dt = datetime(dates);
+lat = 10;
+lon = -180;
+alt = -5;
+coords = 'geodetic';
+try
+    B = igrf(dt, lat, lon, alt, coords);
+catch ME
+    if ~strcmp(ME.identifier, 'igrf:timeOutOfRange')
+        error('Test 5: IGRF should not be valid prior to 1900-01-01.')
+    end
+end
+fprintf('.')
+dates = '2030-01-02';
+dt = datetime(dates);
+try
+    B = igrf(dt, lat, lon, alt, coords);
+catch ME
+    if ~strcmp(ME.identifier, 'igrf:timeOutOfRange')
+        error('Test 6: IGRF should not be valid after to 2030-01-01.')
+    end
+end
+fprintf('.')
 
+% Test geographic poles
+dates = '1927-08-05';
+dt = datetime(dates);
+lat = 90;
+lon = 67;
+alt = 500;
+coords = 'geodetic';
+B = igrf(dt, lat, lon, alt, coords);
+expB = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
+assertWithAbsTol(B, expB, tol, ...
+    'Test 7: Geographic north pole does not match.')
+fprintf('.')
 
-% Test poles
-
+lat = -90;
+B = igrf(dt, lat, lon, alt, coords);
+expB = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
+assertWithAbsTol(B, expB, tol, ...
+    'Test 8: Geographic south pole does not match.')
+fprintf('.')
 
 % Test vector input calculation route (other test are all scalal route)
+dates = '1927-08-05';
+dt = datetime(dates);
+lat = -80;
+lon = [-180, 0, 90];
+rds = 6371.2;
+coords = 'geocentric';
+B = igrf(dt, lat, lon, rds, coords);
+expB = nan(3);
+for i = 1:3
+    expB(i,:) = igrfWebCalc(igrfGen, dates, lat, lon(i), rds, coords);
+end
+assertWithAbsTol(B, expB, tol, ...
+    'Test 9: Vectorised position calculation route does not match.')
+fprintf('.\n')
 
+fprintf('9/9 igrf.m tests passed.\n')
+toc(t0)
 
-
+%%
 function varargout = igrfWebCalc(igrfGen, tVal, lat, lon, alt_rad, coords)
 % function [x, y, z] = igrfWebCalc(igrfGen, dates, lat, lon, alt_rad, coords)
 % function B = igrfWebCalc(igrfGen, dates, lat, lon, alt_rad, coords)
@@ -119,9 +198,16 @@ end
 end % function igrfWebCalc()
 
 function assertWithAbsTol(actVal,expVal,tol,varargin)
-% Helper function to assert equality within an absolute tolerance.
-% Takes two inputs and an optional message and compares
-% them within an absolute tolerance of 1e-6.
-tf = all(abs(actVal-expVal) <= tol);
+% Helper function to assert equality within an absolute tolerance for all
+% elements of an array.
+% 
+% Inputs:
+%  actVal   Double, Test values
+%  expVal   Double, Reference values
+%  tol      Double, Absolute tolerance to test to
+%  message  Char, Error message to display on failure of test
+
+tf = all(abs(actVal-expVal) <= tol, 'all');
 assert(tf, varargin{:});
-end
+
+end % function assertWithAbsTol()

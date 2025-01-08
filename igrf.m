@@ -68,13 +68,14 @@ function [Bx, By, Bz] = igrf(dates, latitude, longitude, altitude, coord)
 %   surface. For geocentric coordiates, the radius in km from the center of
 %   the Earth.
 %   -COORD: String specifying the coordinate system to use. Either
-%   'geocentric' or 'geodetic' (optional, default is geodetic). Note that
-%   only geodetic coordinates have been verified.
+%   'geocentric' or 'geodetic' (optional, default is geodetic).
 % 
 % Outputs:
-%   -BX: Northward component of the magnetic field in nanoteslas (nT).
+%   -BX: Northward component of the magnetic field in nanoteslas (nT), in
+%   'geocentric' or 'geodetic' coordinate system, as per COORD input.
 %   -BY: Eastward component of the magnetic field in nT.
-%   -BZ: Downward component of the magnetic field in nT.
+%   -BZ: Downward component of the magnetic field in nT, in
+%   'geocentric' or 'geodetic' coordinate system, as per COORD input.
 %   -B: [BX(:), BY(:), BZ(:)].
 % 
 % See also: LOADIGRFCOEFS, GETIGRFCOEFS, IGRFLINE, DATENUM, IGRF11MAGM.

@@ -81,20 +81,21 @@ independent codes.
 I have found that there are discepencies of 1nT at 1nT precision in a
 small number of cases, which I have tracked down to language and system
 dependent implementation of rounding used by the various "official" IGRF
-codes available. Essentially, Fortran, C, Matlab and Python may all
-implement different rounding schemes when printing output values at a
-specified precision, particularly on tie values that may be e.g. rounded
-toward zero, away from zero, to even, depending on the specific
-implementation. It is difficult to exactly reproduce output across
-implementations as as each uses slightly different algorithms, typically
-producing variations at less than 1e-3 in the computed values, but that
-mean exact ties effected by rounding schemes are not uniformly produced
-across codes.
+codes available. Essentially, Fortran, C, Matlab and Python (etc) may
+all work with different representation and precisions of float values,
+and implement different rounding schemes when printing output values at
+a specified precision, particularly on tie values that may be e.g.
+rounded toward zero, away from zero, to even, etc, depending on the
+specific implementation. It is difficult to exactly reproduce output
+across implementations as each uses slightly different algorithms,
+typically producing variations at less than 1e-3 in the computed values,
+but that mean rounding and exact ties effected by rounding schemes are
+not uniformly produced across codes.
 
 Note also that handling of computations at the geographic poles is not
-uniform and users should avoid calculations here, as the spherical
-geocentric coordinate system is not well defined there and assumptions
-must be made as to which way North and East are!
+uniform between all codes and users should avoid calculations here, as
+the vector spherical geocentric coordinate system is not well defined
+there and assumptions must be made as to which way North and East are!
 
 ## Other resources
 
