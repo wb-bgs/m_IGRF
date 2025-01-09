@@ -54,6 +54,7 @@ function [Bx, By, Bz] = igrf(dates, latitude, longitude, altitude, coord)
 % Edits:
 %  18-Nov-2024, Will Brown, British Geological Survey
 %    Modernised to use datetime in place of datenum.
+%    Added test script `tests/testIGRF.m` to validate output.
 % 
 % Inputs:
 %   -DATES: Time to get the magnetic field values either in MATLAB datetime

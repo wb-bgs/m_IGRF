@@ -97,6 +97,17 @@ uniform between all codes and users should avoid calculations here, as
 the vector spherical geocentric coordinate system is not well defined
 there and assumptions must be made as to which way North and East are!
 
+## Testing
+
+To run the test cases, use:
+  ```
+  >> !cd tests
+  >> results = runtests('testIGRF');
+  ```
+These tests only verify the output of `igrf.m` (and thus also
+`loadigrfcoefs.m`) and require an internet connection to access the IGRF
+API used to source expected model values for comparison.
+
 ## Other resources
 
 The IGRF homepage and NOAA hosted resources are at,

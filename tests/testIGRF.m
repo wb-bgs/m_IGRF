@@ -5,10 +5,9 @@
 % Request IGRF values from BGS webservice API and validate igrf.m return
 % against them.
 % 
-% results = runtests('testIGRF');
+% Usage:
+% >> results = runtests('testIGRF');
 
-clearvars
-t0 = tic;
 addpath('../')
 
 % Set to current IGRF generation number
@@ -27,19 +26,21 @@ coords = 'geodetic';
 [expX, expY, expZ] = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
 assertWithAbsTol([X,Y,Z], [expX,expY,expZ], tol, ...
     'Test 1: X,Y,Z geodetic does not match.')
-fprintf('.')
 
 %% Test 2: Definitive geocentric single var
 % Test definitive values, in geocentic, single  variable output
+dates = '1960-5-13';
+dt = datetime(dates);
+lat = -45;
+lon = -63;
 rds = 6412.68919478693; % approx match for 50km WGS84 altitude geodetic
 coords = 'geocentric';
 B = igrf(dt, lat, lon, rds, coords);
 expB = igrfWebCalc(igrfGen, dates, lat, lon, rds, coords);
 assertWithAbsTol(B, expB, tol, ...
     'Test 2: B geocentric does not match.')
-fprintf('.')
 
-% Test predicted values
+%% Test 3: Latest predicted values
 dates = '2029-12-31';
 dt = datetime(dates);
 lat = 58.2;
@@ -50,9 +51,8 @@ B = igrf(dt, lat, lon, alt, coords);
 expB = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
 assertWithAbsTol(B, expB, tol, ...
     'Test 3: SV prediction does not match.')
-fprintf('.')
 
-% Test date to decimal year conversion
+%% Test 4: Date to decimal year conversion
 dates = '2000-7-2';
 dt = datetime(dates);
 dyr = 2000.5;
@@ -64,9 +64,8 @@ B = igrf(dt, lat, lon, alt, coords);
 expB = igrfWebCalc(igrfGen, dyr, lat, lon, alt, coords);
 assertWithAbsTol(B, expB, tol, ...
     'Test 4: Date to decimal year conversion does not match.')
-fprintf('.')
 
-% Test date range
+%% Test 5: Date range
 % Should really use the testcase class, but can cheat with try, catch...
 dates = '1899-12-31';
 dt = datetime(dates);
@@ -81,19 +80,18 @@ catch ME
         error('Test 5: IGRF should not be valid prior to 1900-01-01.')
     end
 end
-fprintf('.')
+
 dates = '2030-01-02';
 dt = datetime(dates);
 try
     B = igrf(dt, lat, lon, alt, coords);
 catch ME
     if ~strcmp(ME.identifier, 'igrf:timeOutOfRange')
-        error('Test 6: IGRF should not be valid after to 2030-01-01.')
+        error('Test 5: IGRF should not be valid after to 2030-01-01.')
     end
 end
-fprintf('.')
 
-% Test geographic poles
+%% Test 6: Geographic poles
 dates = '1927-08-05';
 dt = datetime(dates);
 lat = 90;
@@ -103,17 +101,16 @@ coords = 'geodetic';
 B = igrf(dt, lat, lon, alt, coords);
 expB = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
 assertWithAbsTol(B, expB, tol, ...
-    'Test 7: Geographic north pole does not match.')
-fprintf('.')
+    'Test 6: Geographic north pole does not match.')
 
 lat = -90;
 B = igrf(dt, lat, lon, alt, coords);
 expB = igrfWebCalc(igrfGen, dates, lat, lon, alt, coords);
 assertWithAbsTol(B, expB, tol, ...
-    'Test 8: Geographic south pole does not match.')
-fprintf('.')
+    'Test 6: Geographic south pole does not match.')
 
-% Test vector input calculation route (other test are all scalal route)
+%% Test 7: vector input route
+% Other test are all scalal route
 dates = '1927-08-05';
 dt = datetime(dates);
 lat = -80;
@@ -126,13 +123,9 @@ for i = 1:3
     expB(i,:) = igrfWebCalc(igrfGen, dates, lat, lon(i), rds, coords);
 end
 assertWithAbsTol(B, expB, tol, ...
-    'Test 9: Vectorised position calculation route does not match.')
-fprintf('.\n')
+    'Test 7: Vectorised position calculation route does not match.')
 
-fprintf('9/9 igrf.m tests passed.\n')
-toc(t0)
 
-%%
 function varargout = igrfWebCalc(igrfGen, tVal, lat, lon, alt_rad, coords)
 % function [x, y, z] = igrfWebCalc(igrfGen, dates, lat, lon, alt_rad, coords)
 % function B = igrfWebCalc(igrfGen, dates, lat, lon, alt_rad, coords)
